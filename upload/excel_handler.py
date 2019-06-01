@@ -22,10 +22,10 @@ class ExcelHandler(object):
 
         table_fields = []
         for index in real_header_indexes:
-            types = [row[index].ctype for row in sample_rows]
-            col_type = DataTypeUtil.type_distinct(types)
+            cells = [row[index] for row in sample_rows]
+            col_type = DataTypeUtil.type_check(cells)
             field_name = headers[index]
-            field = Field(field_name, field_name, EXCEL_CELL_TYPE[col_type])
+            field = Field(field_name, field_name, col_type)
             table_fields.append(field)
 
         table = Table(table_name, table_fields, row_num)
