@@ -17,8 +17,8 @@ upload_handler = ExcelHandler()
 def upload(*args, **keywords):
     operation = request.args.get("operation")
     excel_stream = request.files.get("file")
-    body = upload_handler.analysis_excel(excel_stream)
-    response = make_response(json.dumps(body), 200)
+    table = upload_handler.analysis_excel(excel_stream)
+    response = make_response(table.to_json(), 200)
     return response
 
 

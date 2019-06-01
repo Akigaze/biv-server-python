@@ -1,20 +1,33 @@
 import xlrd
 
+from entity.Field import Field
+from entity.Table import Table
+from util.DataTypeUtil import DataTypeUtil
+
 
 class ExcelHandler(object):
     def analysis_excel(self, file_stream):
         excel = xlrd.open_workbook(filename=None, file_contents=file_stream.read())
-        sheet_names = excel.sheet_names()
-        print("工作表数量: %d" % excel.nsheets)
-        print("all sheets: %s" % sheet_names)
+        sheet = excel.sheet_by_index(0)
+        table_name = sheet.name
+        row_num, col_num = sheet.nrows, sheet.ncols
+        headers = sheet.row_values(0)
 
-        user_sheet = excel.sheet_by_index(0)
-        # excel.get_sheets()
-        # excel.sheet_by_name()
-        row_num, col_num = user_sheet.nrows, user_sheet.ncols
-        print("sheet name: %s " % user_sheet.name)
-        print("%d 行，%d 列" % (row_num, col_num))
+        default_sample_size = 5
+        sample_size = row_num - 1 if row_num - 1 < default_sample_size else default_sample_size
 
-        headers = user_sheet.row_values(0)
-        return headers
+        real_header_indexes = [i for i in range(col_num) if headers[i] != ""]
+        sample_rows = [sheet.row(i + 1) for i in range(sample_size)]
+
+        table_fields = []
+        for index in real_header_indexes:
+            types = [row[index].ctype for row in sample_rows]
+            col_type = DataTypeUtil.type_distinct(types)
+            field_name = headers[index]
+            field = Field(field_name, field_name, col_type)
+            table_fields.append(field)
+
+        table = Table(table_name, table_fields)
+
+        return table
 
