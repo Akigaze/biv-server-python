@@ -1,2 +1,3 @@
 .idea
 sql_script
+**/__pycache__/**
