@@ -1,5 +1,6 @@
 import xlrd
 
+from constant.db_field_type import EXCEL_CELL_TYPE
 from entity.Field import Field
 from entity.Table import Table
 from util.DataTypeUtil import DataTypeUtil
@@ -24,10 +25,10 @@ class ExcelHandler(object):
             types = [row[index].ctype for row in sample_rows]
             col_type = DataTypeUtil.type_distinct(types)
             field_name = headers[index]
-            field = Field(field_name, field_name, col_type)
+            field = Field(field_name, field_name, EXCEL_CELL_TYPE[col_type])
             table_fields.append(field)
 
-        table = Table(table_name, table_fields)
+        table = Table(table_name, table_fields, row_num)
 
         return table
 
