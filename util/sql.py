@@ -1,4 +1,4 @@
-from constant.sql_template import create_table_template
+from constant.sql_template import create_table_template, field_define_template
 
 
 class SQLUtil(object):
@@ -7,7 +7,7 @@ class SQLUtil(object):
 
     @staticmethod
     def generate_create_scrip(table, fields):
-        field_defs = ["`%s` %s" % (field.get("name"), field.get("type")) for field in fields]
-        create_sql = create_table_template % (table, ", ".join(field_defs))
+        field_defs = [field_define_template % (field.get("name"), field.get("type")) for field in fields]
+        create_sql = create_table_template % (table, ",\n".join(field_defs))
 
         return create_sql
