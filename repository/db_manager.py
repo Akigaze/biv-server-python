@@ -36,8 +36,10 @@ class DataBaseManager(object):
     def close_connection(self):
         if self.__cursor:
             self.__cursor.close()
+            self.__cursor = None
         if self.__connection:
             self.__connection.close()
+            self.__connection = None
         self.rowcount = 0
         self.error_count = 0
         if len(self.error_stack) > 0:
@@ -79,7 +81,7 @@ class DataBaseManager(object):
             cursor = self.get_cursor()
             cursor.execute(sql, args=args)
             self.rowcount += cursor.rowcount
-            print("insert %d : %s" % (self.rowcount, sql))
+            print("insert %d " % self.rowcount)
             return
         except TypeError as err:
             error = err.__traceback__
@@ -89,10 +91,10 @@ class DataBaseManager(object):
             print("DataError: ", err, sql, args)
         except pymysql.err.InternalError as err:
             error = err.__traceback__
-            print("InternalError: ", error, sql, args)
+            print("InternalError: ", err,  sql, args)
 
         self.error_count += 1
-        self.error_stack.append((sql, args))
+        self.error_stack.append((error, sql, args))
 
     def batch_insert(self, args):
         for sql, params in args:
@@ -103,6 +105,7 @@ class DataBaseManager(object):
     def commit(self):
         if self.__connection:
             self.__connection.commit()
+
 
 if __name__ == "__main__":
     pass
