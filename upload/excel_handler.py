@@ -1,39 +1,37 @@
 import xlrd
 
-from constant.db_field_type import EXCEL_CELL_TYPE
 from entity.Field import Field
-from entity.Table import Table
+from util import strutil
 from util.DataTypeUtil import DataTypeUtil
 
 
 class ExcelHandler(object):
     def __init__(self):
         self.stage_sheet = None
+        self.default_sample_size = 20
 
-    def analysis_excel(self, file_stream):
-        excel = xlrd.open_workbook(filename=None, file_contents=file_stream.read())
+    def analyze_excel(self, excel, sheet=None):
         sheet = excel.sheet_by_index(0)
-        table_name = sheet.name
-        row_num, col_num = sheet.nrows, sheet.ncols
+        sheet_name = sheet.name
+
+        row_amount, col_amount = sheet.nrows - 1, sheet.ncols
         headers = sheet.row_values(0)
 
-        default_sample_size = 20
-        sample_size = row_num - 1 if row_num - 1 < default_sample_size else default_sample_size
-
-        real_header_indexes = [i for i in range(col_num) if headers[i] != ""]
+        sample_size = self.default_sample_size if row_amount > self.default_sample_size else row_amount
         sample_rows = [sheet.row(i + 1) for i in range(sample_size)]
 
-        table_fields = []
+        real_header_indexes = [i for i in range(col_amount) if not strutil.empty(headers[i])]
+
+        sheet_fields = []
         for index in real_header_indexes:
-            cells = [row[index] for row in sample_rows]
-            col_type = DataTypeUtil.type_check(cells)
             field_name = headers[index]
-            field = Field(index, field_name, field_name, col_type)
-            table_fields.append(field)
+            cells = [row[index] for row in sample_rows]
+            ctype = DataTypeUtil.type_check(cells)
+            field = Field(index, ctype, name_of_sheet=field_name, name_of_db=field_name)
 
-        table = Table(table_name, table_fields, row_num)
+            sheet_fields.append(field)
 
-        return table
+        return sheet_name, sheet_fields, row_amount
 
     def stage_excel_sheet(self, file_stream):
         excel = xlrd.open_workbook(filename=None, file_contents=file_stream.read())

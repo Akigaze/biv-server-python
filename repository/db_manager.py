@@ -38,6 +38,11 @@ class DataBaseManager(object):
         except DataError as err:
             print("exception: ", err, sql)
 
+    def batch_insert(self, args):
+        for sql, params in args:
+            self.insert(sql, params)
+        self.__connection.commit()
+
     def commit(self):
         self.__connection.commit()
 

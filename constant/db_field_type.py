@@ -5,6 +5,8 @@ class DBDataTypes(object):
     varchar = "VARCHAR(%d)"
     float = "FLOAT"
     int = "INT"
+    text = "TEXT"
+    DEFAULT_VARCHAR_LENGTH = 255
 
     @staticmethod
     def standard_placeholder_and_value(_type, value):

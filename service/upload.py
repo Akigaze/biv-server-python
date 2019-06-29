@@ -1,26 +1,36 @@
+import logging
 from datetime import datetime
+
+import xlrd
 
 from constant.db_field_type import DBDataTypes
 from constant.sql_template import single_insert_template
+from entity.Table import Table
+from exception.ExcelReadError import ExcelReadError
 from repository.db_manager import DataBaseManager
-from upload.FileCache import file_cache
 from upload.excel_handler import ExcelHandler
 from util.sql import SQLUtil
 
 
 class UploadService(object):
     def __init__(self):
-        self.__upload_handler = ExcelHandler()
+        self.__file_handler = ExcelHandler()
         self.sql_util = SQLUtil()
         self.db_manager = DataBaseManager()
         pass
 
-    def analysis_uploaded_file(self, file_stream):
-        table = self.__upload_handler.analysis_excel(file_stream)
+    def analyze_excel(self, excel_stream):
+        try:
+            excel = xlrd.open_workbook(file_contents=excel_stream.read())
+        except Exception as ex:
+            logging.error("error when read excel")
+            raise ExcelReadError()
 
-        file_id = "%s-%d" % (table.name, int(datetime.now().timestamp()))
-        file_cache.clear_cache()
-        file_cache.add_file(file_id, file_stream)
+        logging.info("excel read success")
+        table_name, fields, count = self.__file_handler.analyze_excel(excel)
+
+        table = Table(table_name, fields, count)
+        logging.info("analyze success", table.to_json())
         return table
 
     def create_table(self, name, fields):
@@ -35,12 +45,12 @@ class UploadService(object):
 
     def insert_multiple(self, table, fields, file_stream):
         batch_size = 10
-        self.__upload_handler.stage_excel_sheet(file_stream)
+        self.__file_handler.stage_excel_sheet(file_stream)
         col_indexes = [field.get("index") for field in fields]
         col_field_names = ["`%s`" % field.get("name") for field in fields]
         col_field_types = [field.get("type") for field in fields]
 
-        row_data = self.__upload_handler.cell_values_of_cols(col_indexes)
+        row_data = self.__file_handler.cell_values_of_cols(col_indexes)
         self.db_manager.start_transition()
         for row in row_data:
             inserting_cols = ", ".join(col_field_names)
