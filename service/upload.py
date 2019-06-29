@@ -23,14 +23,14 @@ class UploadService(object):
         try:
             excel = xlrd.open_workbook(file_contents=excel_stream.read())
         except Exception as ex:
-            logging.error("error when read excel")
+            print("error when read excel")
             raise ExcelReadError()
 
-        logging.info("excel read success")
+        print("excel read success")
         table_name, fields, count = self.__file_handler.analyze_excel(excel)
 
         table = Table(table_name, fields, count)
-        logging.info("analyze success", table.to_json())
+        print("analyze success", table.to_json())
         return table
 
     def create_table(self, name, fields):

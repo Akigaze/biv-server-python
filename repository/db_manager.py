@@ -1,6 +1,9 @@
 import pymysql
 from pymysql import DataError
 
+from constant.sql_template import show_tables_template, drop_table_template
+from util.sql import SQLUtil
+
 
 class DataBaseManager(object):
     def __init__(self):
@@ -8,6 +11,14 @@ class DataBaseManager(object):
         self.__cursor = None
         self.__effect_rows = 0
         pass
+
+    def get_connection(self):
+        if self.__connection is None:
+            self.__connection = self.__create_connection()
+        return self.__connection
+
+    def close_connection(self):
+        self.__connection.close()
 
     def __create_connection(self):
         connect_config = {
@@ -17,16 +28,33 @@ class DataBaseManager(object):
             "password": "akigaze",
             "database": "python-connect"
         }
-        self.__connection = pymysql.connect(**connect_config)
+        return pymysql.connect(**connect_config)
 
-    def create_table(self, sql):
-        self.__create_connection()
-        cursor = self.__connection.cursor()
+    def has_table(self, table):
+        cursor = self.get_connection().cursor()
+        cursor.execute(show_tables_template)
+        tables = [t[0] for t in cursor.fetchall()]
+        existed = table in tables
+        print("%s%s exist in %s" % (table, "" if existed else " not", tables))
+        cursor.close()
+        return existed
+
+    def drop_table(self, table):
+        connection = self.get_connection()
+        if self.has_table(table):
+            cursor = connection.cursor()
+            cursor.execute(drop_table_template % table)
+            print("drop the table %s" % table)
+            cursor.close()
+
+    def create_table(self, table, fields):
+        sql = SQLUtil.generate_create_scrip(table, fields)
+        cursor = self.get_connection().cursor()
         cursor.execute(sql)
         result = cursor.fetchall()
+        print("create table %s" % table)
         cursor.close()
-        self.__connection.close()
-        return result
+        return result, sql
 
     def insert(self, sql, args=None):
         try:

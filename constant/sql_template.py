@@ -1,4 +1,6 @@
-create_table_template = "CREATE TABLE `%s` (\n%s\n)"
+create_table_template = "CREATE TABLE IF NOT EXISTS `%s` (\n%s\n)"
 field_define_template = "\t`%s` %s"
 multiple_insert_template = "INSERT INTO `%s` (%s) VALUES %s"
 single_insert_template = "INSERT INTO `%s` (%s) VALUE (%s)"
+show_tables_template = "show tables"
+drop_table_template = "drop table %s"
