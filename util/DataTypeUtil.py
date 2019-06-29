@@ -12,10 +12,12 @@ class DataTypeUtil(object):
     def type_check(cells):
         values = [cell.value for cell in cells if not strutil.equals(cell.value, NONE_VALUE)]
         if len(values) == 0:
-            return DBDataTypes.varchar % DBDataTypes.DEFAULT_VARCHAR_LENGTH
+            return DBDataTypes.text
 
         types = [type(value) for value in values]
         if str in types:
+            if max([len(str(value)) for value in values]) > DBDataTypes.DEFAULT_VARCHAR_LENGTH:
+                return DBDataTypes.text
             return DBDataTypes.varchar % DBDataTypes.DEFAULT_VARCHAR_LENGTH
 
         return DBDataTypes.int if DataTypeUtil.all_int(*values) else DBDataTypes.float

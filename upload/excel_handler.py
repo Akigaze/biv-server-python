@@ -8,11 +8,13 @@ from util.DataTypeUtil import DataTypeUtil
 class ExcelHandler(object):
     def __init__(self):
         self.stage_sheet = None
-        self.default_sample_size = 20
+        self.default_sample_size = 1000
 
-    def analyze_excel(self, excel, sheet=None):
+    def analyze_excel(self, stream, sheet=None):
+        excel = xlrd.open_workbook(file_contents=stream.read())
         sheet = excel.sheet_by_index(0)
         sheet_name = sheet.name
+        print("excel read success: %s" % sheet_name)
 
         row_amount, col_amount = sheet.nrows - 1, sheet.ncols
         headers = sheet.row_values(0)
@@ -46,13 +48,15 @@ class ExcelHandler(object):
             cur_row += 1
         return result
 
-    def cell_values_of_cols(self, cols):
-        cur_row = 1
-        row_num = self.stage_sheet.nrows
-        while cur_row < row_num:
-            row_values = [self.stage_sheet.cell_value(cur_row, col) for col in cols]
+    def get_cell_values_of_cols(self, stream, cols):
+        excel = xlrd.open_workbook(file_contents=stream.read())
+        sheet = excel.sheet_by_index(0)
+        row_amount = sheet.nrows
+        current_row = 1
+        while current_row < row_amount:
+            row_values = [sheet.cell_value(current_row, col) for col in cols]
             yield row_values
-            cur_row += 1
-        return "end"
+            current_row += 1
+        return None
 
 

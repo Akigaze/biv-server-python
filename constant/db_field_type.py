@@ -1,3 +1,5 @@
+from constant.special_char_of_file import NONE_VALUE
+
 EXCEL_CELL_TYPE = ["string", "string", "float", "float", "bool", "error", "empty"]
 
 
@@ -9,11 +11,11 @@ class DBDataTypes(object):
     DEFAULT_VARCHAR_LENGTH = 255
 
     @staticmethod
-    def standard_placeholder_and_value(_type, value):
-        _value = value if value != "--" else None
-        if _type == DBDataTypes.int:
-            return "%s", int(_value)
-        elif _type == DBDataTypes.float:
-            return "%s", _value
-        else:
-            return "%s", _value
+    def standard_placeholder_and_value(dtype=None, value=None):
+        _value = value if value != NONE_VALUE else None
+        if _value:
+            if dtype == DBDataTypes.int:
+                return "%s", int(_value)
+            elif dtype == DBDataTypes.float:
+                return "%s", float(_value)
+        return "%s", _value

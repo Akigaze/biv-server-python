@@ -14,3 +14,10 @@ class Field(object):
         }
         return json
 
+
+class Property(object):
+    ID = "id"
+    NAME_OF_SHEET = "nameOfSheet"
+    NAME_OF_DB = "nameOfDatabase"
+    CTYPE = "type"
+    NAME = "name"

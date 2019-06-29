@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import pymysql
 from pymysql import DataError
 
@@ -6,29 +8,44 @@ from util.sql import SQLUtil
 
 
 class DataBaseManager(object):
+
     def __init__(self):
         self.__connection = None
         self.__cursor = None
-        self.__effect_rows = 0
-        pass
-
-    def get_connection(self):
-        if self.__connection is None:
-            self.__connection = self.__create_connection()
-        return self.__connection
-
-    def close_connection(self):
-        self.__connection.close()
-
-    def __create_connection(self):
-        connect_config = {
+        self.rowcount = 0
+        self.error_count = 0
+        self.error_stack = []
+        self.connect_config = {
             "host": "localhost",
             "port": 3306,
             "user": "akigaze",
             "password": "akigaze",
             "database": "python-connect"
         }
-        return pymysql.connect(**connect_config)
+
+    def get_connection(self):
+        if self.__connection is None:
+            self.__connection = pymysql.connect(**self.connect_config)
+        return self.__connection
+
+    def get_cursor(self):
+        if self.__cursor is None:
+            self.__cursor = self.get_connection().cursor()
+        return self.__cursor
+
+    def close_connection(self):
+        if self.__cursor:
+            self.__cursor.close()
+        if self.__connection:
+            self.__connection.close()
+        self.rowcount = 0
+        self.error_count = 0
+        if len(self.error_stack) > 0:
+            log_file_path = "log//%s.txt" % datetime.now().strftime("%Y-%m-%d %H-%M-%S")
+            with open(log_file_path, "x") as stream:
+                content = "\n".join(["error: %s, sql: %s, args: %s" % (e, s, a) for e, s, a in self.error_stack])
+                stream.write(content)
+            self.error_stack = []
 
     def has_table(self, table):
         cursor = self.get_connection().cursor()
@@ -57,32 +74,35 @@ class DataBaseManager(object):
         return result, sql
 
     def insert(self, sql, args=None):
+        error = None
         try:
-            self.__cursor.execute(sql, args=args)
-            self.__effect_rows += self.__cursor.rowcount
-            self.__connection.commit()
+            cursor = self.get_cursor()
+            cursor.execute(sql, args=args)
+            self.rowcount += cursor.rowcount
+            print("insert %d : %s" % (self.rowcount, sql))
+            return
         except TypeError as err:
-            print("exception: ", err, sql)
+            error = err.__traceback__
+            print("TypeError: ", err, sql, args)
         except DataError as err:
-            print("exception: ", err, sql)
+            error = err.__traceback__
+            print("DataError: ", err, sql, args)
+        except pymysql.err.InternalError as err:
+            error = err.__traceback__
+            print("InternalError: ", error, sql, args)
+
+        self.error_count += 1
+        self.error_stack.append((sql, args))
 
     def batch_insert(self, args):
         for sql, params in args:
             self.insert(sql, params)
-        self.__connection.commit()
+        self.commit()
+        print("batch insert complete: %d rows" % len(args))
 
     def commit(self):
-        self.__connection.commit()
+        if self.__connection:
+            self.__connection.commit()
 
-    def end_transition(self):
-        self.__connection.commit()
-        self.__cursor.close()
-        self.__connection.close()
-        return self.__effect_rows
-
-    def start_transition(self):
-        self.__effect_rows = 0
-        self.__create_connection()
-        self.__cursor = self.__connection.cursor()
-
-
+if __name__ == "__main__":
+    pass
