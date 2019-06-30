@@ -19,7 +19,9 @@ class ExcelHandler(object):
         row_amount, col_amount = sheet.nrows - 1, sheet.ncols
         headers = sheet.row_values(0)
 
-        sample_size = self.default_sample_size if row_amount > self.default_sample_size else row_amount
+        # sample_size = self.default_sample_size if row_amount > self.default_sample_size else row_amount
+        sample_size = row_amount
+
         sample_rows = [sheet.row(i + 1) for i in range(sample_size)]
 
         real_header_indexes = [i for i in range(col_amount) if not strutil.empty(headers[i])]

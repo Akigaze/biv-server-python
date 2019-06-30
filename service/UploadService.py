@@ -5,6 +5,7 @@ from entity.Field import Property
 from entity.Table import Table
 from repository.db_manager import DataBaseManager
 from upload.excel_handler import ExcelHandler
+from util.DataTypeUtil import DataTypeUtil
 from util.sql import SQLUtil
 
 CREATE_TABLE_SQL_NAME_TEMPLATE = "create_table_%s_%d"
@@ -47,7 +48,7 @@ class UploadService(object):
         start = datetime.now()
         for row in row_data:
             placeholder_values = [
-                DBDataTypes.standard_placeholder_and_value(dtype=db_field_types[i], value=v) for i, v in enumerate(row)
+                DataTypeUtil.standard_placeholder_and_value(dtype=db_field_types[i], value=v) for i, v in enumerate(row)
             ]
             placeholder = [item[0] for item in placeholder_values]
             insert_values = [item[1] for item in placeholder_values]
@@ -64,5 +65,5 @@ class UploadService(object):
         self.db_manager.close_connection()
         end = datetime.now()
         cost_time = (end - start).seconds
-        print("excel data insert complete: %d rows \n cost time: %s second" % (insert_count, cost_time))
+        print("excel data insert complete: %d rows \ncost time: %s second" % (insert_count, cost_time))
         return insert_count, error_count, cost_time
