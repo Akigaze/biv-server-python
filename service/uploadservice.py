@@ -1,12 +1,10 @@
 from datetime import datetime
 
-from constant.db_field_type import DBDataTypes
-from entity.Field import Property
-from entity.Table import Table
-from repository.db_manager import DataBaseManager
-from upload.excel_handler import ExcelHandler
-from util.DataTypeUtil import DataTypeUtil
-from util.sql import SQLUtil
+from entity.table import Table, Property
+from repository.dbmanager import DataBaseManager
+from upload.excelhandler import ExcelHandler
+from util.datatypeutil import DataTypeUtil
+from util.sqlutil import SQLUtil
 
 CREATE_TABLE_SQL_NAME_TEMPLATE = "create_table_%s_%d"
 SQL_SCRIPT_PATH_TEMPLATE = "sql_script//%s.sql"
@@ -60,10 +58,8 @@ class UploadService(object):
                 batch_data = []
 
         self.db_manager.batch_insert(batch_data)
-        insert_count = self.db_manager.rowcount
-        error_count = self.db_manager.error_count
+        insert_count, error_count = self.db_manager.rowcount, self.db_manager.error_count
         self.db_manager.close_connection()
-        end = datetime.now()
-        cost_time = (end - start).seconds
+        cost_time = (datetime.now() - start).seconds
         print("excel data insert complete: %d rows \ncost time: %s second" % (insert_count, cost_time))
         return insert_count, error_count, cost_time

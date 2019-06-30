@@ -3,8 +3,8 @@ from datetime import datetime
 import pymysql
 from pymysql import DataError
 
-from constant.sql_template import show_tables_template, drop_table_template
-from util.sql import SQLUtil
+from constant.sqltemplate import show_tables_template, drop_table_template
+from util.sqlutil import SQLUtil
 
 
 class DataBaseManager(object):
@@ -81,16 +81,16 @@ class DataBaseManager(object):
             cursor = self.get_cursor()
             cursor.execute(sql, args=args)
             self.rowcount += cursor.rowcount
-            print("insert %d " % self.rowcount)
+            # print("insert %d " % self.rowcount)
             return
         except TypeError as err:
-            error = err.__traceback__
+            error = "%s" % err
             print("TypeError: ", err, sql, args)
         except DataError as err:
-            error = err.__traceback__
+            error = "%s" % err
             print("DataError: ", err, sql, args)
         except pymysql.err.InternalError as err:
-            error = err.__traceback__
+            error = "%s" % err
             print("InternalError: ", err,  sql, args)
 
         self.error_count += 1
@@ -100,7 +100,7 @@ class DataBaseManager(object):
         for sql, params in args:
             self.insert(sql, params)
         self.commit()
-        print("batch insert complete: %d rows" % len(args))
+        print("batch insert complete: %d rows, total: %d" % (len(args), self.rowcount))
 
     def commit(self):
         if self.__connection:

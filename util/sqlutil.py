@@ -1,5 +1,5 @@
-from constant.sql_template import create_table_template, field_define_template, single_insert_template
-from entity.Field import Property
+from constant.sqltemplate import create_table_template, field_define_template, single_insert_template
+from entity.table import Property
 
 
 class SQLUtil(object):

@@ -1,14 +1,14 @@
 import decimal
 
-from constant.db_field_type import DBDataTypes
-from constant.special_char_of_file import NONE_VALUE
+from constant.dbdatatype import DBDataTypes
+from constant.specialchar import NONE_VALUE
 from util import strutil
 
 ctx = decimal.Context()
 ctx.prec = 20
 
-class DataTypeUtil(object):
 
+class DataTypeUtil(object):
     @staticmethod
     def standard_placeholder_and_value(dtype=None, value=None):
         _value = value if value != NONE_VALUE else None
@@ -32,10 +32,11 @@ class DataTypeUtil(object):
             return DBDataTypes.varchar % DBDataTypes.DEFAULT_VARCHAR_LENGTH
         if DataTypeUtil.all_int(*values):
             return DBDataTypes.int
-        # accuracies = [DataTypeUtil.float_to_str(float(value)).split(".") for value in values if value != 0]
-        # print(accuracies)
-        # significant_digit = max([len(accuracy[0]) for accuracy in accuracies])
-        # decimal_places = max([len(accuracy[1]) for accuracy in accuracies])
+        accuracies = [DataTypeUtil.float_to_str(float(value)).split(".") for value in values if value != 0]
+        significant_digit = max([len(accuracy[0]) for accuracy in accuracies])
+        decimal_places = max([len(accuracy[1]) for accuracy in accuracies])
+        if decimal_places > DBDataTypes.MAX_DECIMAL_PLACES_OF_FLOAT:
+            return DBDataTypes.varchar % DBDataTypes.DEFAULT_VARCHAR_LENGTH
         return DBDataTypes.float
 
     @staticmethod

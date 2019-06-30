@@ -7,4 +7,5 @@ class DBDataTypes(object):
     int = "INT"
     text = "TEXT"
     DEFAULT_VARCHAR_LENGTH = 255
+    MAX_DECIMAL_PLACES_OF_FLOAT = 30
 
