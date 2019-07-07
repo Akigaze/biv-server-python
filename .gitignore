@@ -2,3 +2,4 @@
 sql_script/*.sql
 log/*.txt
 **/__pycache__/**
+output/**
