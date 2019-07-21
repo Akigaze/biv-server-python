@@ -1,5 +1,6 @@
 .idea
-sql_script/*.sql
+sqlscript/*.sql
 log/*.txt
 **/__pycache__/**
 output/**
+demo

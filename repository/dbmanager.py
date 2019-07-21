@@ -3,8 +3,9 @@ from datetime import datetime
 import pymysql
 from pymysql import DataError
 
+from config.dbconfig import CONNECTION_CONFIG
 from constant.sqltemplate import show_tables_template, drop_table_template
-from util.sqlutil import SQLUtil
+from util.sqlutil import SQLUtil, LOG_FILE_PATH
 
 
 class DataBaseManager(object):
@@ -15,17 +16,10 @@ class DataBaseManager(object):
         self.rowcount = 0
         self.error_count = 0
         self.error_stack = []
-        self.connect_config = {
-            "host": "localhost",
-            "port": 3306,
-            "user": "akigaze",
-            "password": "akigaze",
-            "database": "python-connect"
-        }
 
     def get_connection(self):
         if self.__connection is None:
-            self.__connection = pymysql.connect(**self.connect_config)
+            self.__connection = pymysql.connect(**CONNECTION_CONFIG)
         return self.__connection
 
     def get_cursor(self):
@@ -43,7 +37,7 @@ class DataBaseManager(object):
         self.rowcount = 0
         self.error_count = 0
         if len(self.error_stack) > 0:
-            log_file_path = "log//%s.txt" % datetime.now().strftime("%Y-%m-%d %H-%M-%S")
+            log_file_path = LOG_FILE_PATH % datetime.now().strftime("%Y-%m-%d %H-%M-%S")
             with open(log_file_path, "x") as stream:
                 content = "\n".join(["error: %s, sql: %s, args: %s" % (e, s, a) for e, s, a in self.error_stack])
                 stream.write(content)

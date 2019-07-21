@@ -10,15 +10,15 @@ from service.uploadservice import UploadService
 from util import httputil
 from constant.requestparams import UploadParams, OperationType
 
-app = Flask(__name__)
+bivapp = Flask(__name__)
 logging.basicConfig()
 # r'/*' 是通配符，让本服务器所有的URL 都允许跨域请求
-CORS(app, resources=[r'/file', r'/table'])
+CORS(bivapp, resources=[r'/file', r'/table'])
 
 upload_service = UploadService()
 
 
-@app.route('/file', methods=['POST'])
+@bivapp.route('/file', methods=['POST'])
 def analyze(*args, **keywords):
     operation = request.args.get(UploadParams.OPERATION)
     response = None
@@ -36,7 +36,7 @@ def analyze(*args, **keywords):
     return response
 
 
-@app.route('/table', methods=['POST'])
+@bivapp.route('/table', methods=['POST'])
 def upload_operate(*args, **keywords):
     operation = request.args.get(UploadParams.OPERATION)
     if operation == OperationType.CREATE:
@@ -61,6 +61,3 @@ def upload_operate(*args, **keywords):
         response = make_response(json.dumps(result), 200)
         return response
 
-
-if __name__ == '__main__':
-    app.run(host="localhost", debug=True, port=9100)

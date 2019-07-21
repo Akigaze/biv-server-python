@@ -16,8 +16,8 @@ COMPLETE = 7
 WAIT = 0
 START = 1
 JOB_NOT_COMPLETE_SYMBOL = "<h2>Phyre2 File not Found</h2>"
-PDB_DIR_PATH = "E://PythonStation//project//bio-info-visvility//biv-server//output//phyre2//pdb//"
-FINIAL_COMPLETE_FILE_PATH = "E://PythonStation//project//bio-info-visvility//biv-server//output//phyre2//complete.txt"
+PDB_DIR_PATH = os.path.join(os.getcwd(), "output", "phyre2", "pdb")
+FINIAL_COMPLETE_FILE_PATH = os.path.join(os.getcwd(), "output", "phyre2", "complete.txt")
 
 
 class Phyre2Service(object):
@@ -142,7 +142,6 @@ class Phyre2Service(object):
     def retrieve_templates(self, text):
         templates = self.template_regex.findall(text)
         return tuple(get_sub_list(templates, length=3))
-
 
 
 class JobResource(object):

@@ -1,13 +1,13 @@
 from datetime import datetime
 
+from config.dbconfig import BATCH_INSERT_SIZE
 from entity.table import Table, Property
 from repository.dbmanager import DataBaseManager
 from upload.excelhandler import ExcelHandler
 from util.datatypeutil import DataTypeUtil
-from util.sqlutil import SQLUtil
+from util.sqlutil import SQLUtil, SQL_SCRIPT_PATH_TEMPLATE
 
 CREATE_TABLE_SQL_NAME_TEMPLATE = "create_table_%s_%d"
-SQL_SCRIPT_PATH_TEMPLATE = "sql_script//%s.sql"
 
 
 class UploadService(object):
@@ -15,7 +15,6 @@ class UploadService(object):
         self.__file_handler = ExcelHandler()
         self.sql_util = SQLUtil()
         self.db_manager = DataBaseManager()
-        self.batch_size = 100
 
     def analyze_excel(self, excel_stream):
         table_name, fields, count = self.__file_handler.analyze_excel(excel_stream)
@@ -53,7 +52,7 @@ class UploadService(object):
             insert_sql = SQLUtil.generate_insert_sql(table, db_field_names, placeholder)
             batch_data.append((insert_sql, tuple(insert_values)))
 
-            if len(batch_data) == self.batch_size:
+            if len(batch_data) == BATCH_INSERT_SIZE:
                 self.db_manager.batch_insert(batch_data)
                 batch_data = []
 

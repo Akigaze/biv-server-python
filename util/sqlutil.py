@@ -1,5 +1,10 @@
+import os
+
 from constant.sqltemplate import create_table_template, field_define_template, single_insert_template
 from entity.table import Property
+
+SQL_SCRIPT_PATH_TEMPLATE = os.path.join(os.getcwd(), "sqlscript", "%s.sql")
+LOG_FILE_PATH = os.path.join(os.getcwd(), "log", "db", "%s.txt")
 
 
 class SQLUtil(object):
