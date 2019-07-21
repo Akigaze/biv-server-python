@@ -1,12 +1,12 @@
 import json
 import logging
 
-from flask import Flask, make_response
+from flask import Flask, make_response, abort
 from flask import request
 from flask_cors import CORS
 
 from exception.excelerror import ExcelReadError
-from service.uploadservice import UploadService
+from service.uploadservice import UploadService, INSERT_SUCCESS, TABLE_NOT_EXISTED
 from util import httputil
 from constant.requestparams import UploadParams, OperationType
 
@@ -20,7 +20,6 @@ upload_service = UploadService()
 
 @bivapp.route('/file', methods=['POST'])
 def analyze(*args, **keywords):
-    operation = request.args.get(UploadParams.OPERATION)
     response = None
     try:
         excel_stream = httputil.retrieve_request_file(request, UploadParams.FILE_NAME)
@@ -38,6 +37,7 @@ def analyze(*args, **keywords):
 
 @bivapp.route('/table', methods=['POST'])
 def upload_operate(*args, **keywords):
+    response = None
     operation = request.args.get(UploadParams.OPERATION)
     if operation == OperationType.CREATE:
         data_json = json.loads(request.data)
@@ -56,8 +56,13 @@ def upload_operate(*args, **keywords):
         table_name = request.form.get(UploadParams.TABLE_NAME)
         fields = json.loads(request.form.get(UploadParams.FIELDS))
 
-        success_rows, fail_rows, cost_time = upload_service.insert_data(table_name, fields, excel_stream)
-        result = {"successRows": success_rows, "failRows": fail_rows, "costTime": cost_time, "success": True, "table": table_name}
-        response = make_response(json.dumps(result), 200)
+        result = upload_service.insert_data(table_name, fields, excel_stream)
+        if result.result == INSERT_SUCCESS:
+            success_rows, fail_rows, cost_time = result.detail
+            result = {"successRows": success_rows, "failRows": fail_rows, "costTime": cost_time, "success": True, "table": table_name}
+            response = make_response(json.dumps(result), 200)
+        elif result.result == TABLE_NOT_EXISTED:
+            abort(404)
+
         return response
 

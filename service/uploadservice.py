@@ -8,6 +8,8 @@ from util.datatypeutil import DataTypeUtil
 from util.sqlutil import SQLUtil, SQL_SCRIPT_PATH_TEMPLATE
 
 CREATE_TABLE_SQL_NAME_TEMPLATE = "create_table_%s_%d"
+TABLE_NOT_EXISTED = "TABLE_NOT_EXISTED"
+INSERT_SUCCESS = "INSERT_SUCCESS"
 
 
 class UploadService(object):
@@ -34,6 +36,8 @@ class UploadService(object):
         return True
 
     def insert_data(self, table, fields, excel_stream):
+        if not self.db_manager.has_table(table):
+            return InsertResult(TABLE_NOT_EXISTED)
         excel_col_indexes = [field.get(Property.ID) for field in fields]
         db_field_names = [field.get(Property.NAME_OF_DB) for field in fields]
         db_field_types = [field.get(Property.CTYPE) for field in fields]
@@ -61,4 +65,16 @@ class UploadService(object):
         self.db_manager.close_connection()
         cost_time = (datetime.now() - start).seconds
         print("excel data insert complete: %d rows \ncost time: %s second" % (insert_count, cost_time))
-        return insert_count, error_count, cost_time
+        result = InsertResult(INSERT_SUCCESS)
+        result.set_detail(insert_count, error_count, cost_time)
+        return result
+
+
+class InsertResult(object):
+    def __init__(self, result):
+        self.result = result
+        self.detail = None
+
+    def set_detail(self, insert_count, error_count, cost_time, *args):
+        self.detail = (insert_count, error_count, cost_time)
+
